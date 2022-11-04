@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "295826318700",
+    "project_id": "quiz-tournament-assingment2",
+    "storage_bucket": "quiz-tournament-assingment2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:295826318700:android:c945898be3ea5ebeec7f49",
+        "android_client_info": {
+          "package_name": "nz.ac.unitec.cs.assignment2_mini"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "295826318700-4g159jcgp54na3f9s28j7p0vrpv1saar.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBkEDfZw670lyGTAtNkIvwjLNRuFAZLns"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "295826318700-4g159jcgp54na3f9s28j7p0vrpv1saar.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:295826318700:android:ca4e391c62c53948ec7f49",
+        "android_client_info": {
+          "package_name": "nz.ac.unitec.cs.assignment_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "295826318700-4g159jcgp54na3f9s28j7p0vrpv1saar.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBkEDfZw670lyGTAtNkIvwjLNRuFAZLns"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "295826318700-4g159jcgp54na3f9s28j7p0vrpv1saar.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
