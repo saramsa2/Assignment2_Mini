@@ -53,6 +53,7 @@ public class NewTournamentActivity extends AppCompatActivity {
     private final String QUIZ_URL = "https://opentdb.com/api.php?amount=10&type=multiple";
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    ProgressDialog dialog;
     VolleyAPI volleyAPI;
 
 
@@ -72,6 +73,10 @@ public class NewTournamentActivity extends AppCompatActivity {
         btCancel = findViewById(R.id.bt_admin_cancel);
 
         volleyAPI = new VolleyAPI(NewTournamentActivity.this, CATEGORY_URL);
+
+        dialog = new ProgressDialog(NewTournamentActivity.this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Connecting Server");
 
         addEventListeners();
         setInit();
@@ -194,7 +199,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                     quizCategoryId =  QuizCategoryId;
 
                     quiz.put("name", QuizName);
-                    quiz.put("category_id", QuizCategoryText);
+                    quiz.put("category", QuizCategoryText);
                     quiz.put("difficulty", quizDifficulty);
                     quiz.put("start_date", QuizStartDate);
                     quiz.put("end_date", QuizEndDate);
@@ -225,6 +230,8 @@ public class NewTournamentActivity extends AppCompatActivity {
             myQuizUrl += "&difficulty=" + quizDifficulty;
         }
 
+
+
         VolleyAPI quizVolleyAPI = new VolleyAPI(NewTournamentActivity.this, myQuizUrl);
         quizVolleyAPI.setReadAPIListener(new VolleyAPI.readAPIListener() {
             @Override
@@ -238,10 +245,12 @@ public class NewTournamentActivity extends AppCompatActivity {
 
             @Override
             public void readAPIFailed() {
-
+                dialog.dismiss();
+                Toast.makeText(NewTournamentActivity.this, "Loading fail", Toast.LENGTH_SHORT).show();
             }
         });
         quizVolleyAPI.getAPI();
+        dialog.show();
     }
 
     private void saveNewQuiz(String response, Map<String, Object> quiz) {
@@ -254,8 +263,6 @@ public class NewTournamentActivity extends AppCompatActivity {
                 public void onSuccess(DocumentReference documentReference) {
                     String key = documentReference.getId();
                     quiz.put("detail_key", key);
-                    Toast.makeText(NewTournamentActivity.this, "succeed.",
-                            Toast.LENGTH_SHORT).show();
                     updateQuizList(quiz);
                 }
             })
@@ -269,14 +276,12 @@ public class NewTournamentActivity extends AppCompatActivity {
     }
 
     private void updateQuizList(Map<String, Object> quiz) {
-        MyQuiz myquiz = new MyQuiz();
         db.collection("QuizList")
                 .add(quiz)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Toast.makeText(NewTournamentActivity.this, "succeed.",
-                                Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
