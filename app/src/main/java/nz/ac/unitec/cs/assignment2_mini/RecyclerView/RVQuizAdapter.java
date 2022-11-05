@@ -48,10 +48,9 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
         calendarEnd.set(Integer.parseInt(endDateDiv[2]) , Integer.parseInt(endDateDiv[1])-1 , Integer.parseInt(endDateDiv[0]));
 
         try {
-            holder.tvTerm.setText(startDate);
-            holder.tvProgress.setText(endDate);
+            holder.tvTerm.setText("Start: "+ startDate);
+            holder.tvProgress.setText("End: "+ endDate);
             holder.tvTitle.setText(quiz.get("name"));
-            holder.tvStatus.setText(quiz.get("name"));
             holder.tvKey.setText(quiz.get("key"));
             if(today.after(calendarEnd)) {
                 holder.tvStatus.setText("Finished");

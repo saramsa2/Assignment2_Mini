@@ -30,7 +30,6 @@ public class TournamentActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     ProgressDialog dialog;
     ArrayList quizzes = new ArrayList();
-    ArrayList todoName = new ArrayList<>(Arrays.asList("All", "Assignment", "To Do", "Mindful", "Timetable", "C-Language", "HTML 5", "CSS"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +40,6 @@ public class TournamentActivity extends AppCompatActivity {
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-
 
         setLoadingDialog();
         loadQuizList();

@@ -1,5 +1,6 @@
 package nz.ac.unitec.cs.assignment2_mini;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -7,7 +8,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -42,30 +47,34 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity.this, UserActivity.class);
+//                intent.putExtra("UID", "NHG3LtDMbrcleijMxWDemHFWUyz1");
+//                startActivity(intent);
 
-//                String email = etEmail.getText().toString();
-//                String password = etPassword.getText().toString();
-//                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()){
-//                            FirebaseUser user = mAuth.getCurrentUser();
-//                            Toast.makeText(MainActivity.this, "Authentication succeed.",
-//                                    Toast.LENGTH_SHORT).show();
-//                            if(user.getDisplayName().equals("admin")){
-//                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
-//                                startActivity(intent);
-//                            }
-//
-//                        }
-//                        else{
-//                            Toast.makeText(MainActivity.this, "Authentication failed.",
-//                                    Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                });
+                String email = etEmail.getText().toString();
+                String password = etPassword.getText().toString();
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()){
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(MainActivity.this, "Authentication succeed.",
+                                    Toast.LENGTH_SHORT).show();
+                            if(user.getUid().equals("AsUJaklGqiR3lzIHcDpDLJCrYu22")){
+                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                                startActivity(intent);
+                            } else {
+                                Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                                intent.putExtra("UID", user.getUid());
+                                startActivity(intent);
+                            }
+                        }
+                        else{
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
         });
 
