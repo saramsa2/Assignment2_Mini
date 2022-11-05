@@ -14,9 +14,12 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 
@@ -30,9 +33,7 @@ import java.util.Map;
 
 import nz.ac.unitec.cs.assignment2_mini.DataModel.Categories;
 import nz.ac.unitec.cs.assignment2_mini.DataModel.Category;
-import nz.ac.unitec.cs.assignment2_mini.DataModel.Quiz;
 import nz.ac.unitec.cs.assignment2_mini.DataModel.Quizzes;
-import nz.ac.unitec.cs.assignment2_mini.DataModel.MyQuiz;
 import nz.ac.unitec.cs.assignment2_mini.Volley.VolleyAPI;
 
 public class NewTournamentActivity extends AppCompatActivity {
@@ -41,11 +42,13 @@ public class NewTournamentActivity extends AppCompatActivity {
     EditText etName, etStartDate, etEndDate;
     Spinner spinCategory, spinDifficulty;
 
-    Button btCreate, btCancel;
+    Button btSubmit, btCancel;
 
     Categories categories;
+    String quizCategory;
     String quizCategoryId;
     String quizDifficulty;
+    String quizDifficultyId;
 
     Calendar calendar = Calendar.getInstance();
 
@@ -55,6 +58,7 @@ public class NewTournamentActivity extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     ProgressDialog dialog;
     VolleyAPI volleyAPI;
+    String quizKey;
 
 
     @Override
@@ -69,7 +73,7 @@ public class NewTournamentActivity extends AppCompatActivity {
         spinCategory = findViewById(R.id.spinner_edit_tournament_category);
         spinDifficulty = findViewById(R.id.spinner_edit_tournament_difficulty);
 
-        btCreate = findViewById(R.id.bt_admin_create);
+        btSubmit = findViewById(R.id.bt_admin_create);
         btCancel = findViewById(R.id.bt_admin_cancel);
 
         volleyAPI = new VolleyAPI(NewTournamentActivity.this, CATEGORY_URL);
@@ -77,6 +81,8 @@ public class NewTournamentActivity extends AppCompatActivity {
         dialog = new ProgressDialog(NewTournamentActivity.this);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setMessage("Connecting Server");
+
+        quizKey = getIntent().getExtras().get("key").toString();
 
         addEventListeners();
         setInit();
@@ -96,17 +102,17 @@ public class NewTournamentActivity extends AppCompatActivity {
         etStartDate.setText(txtInitStartDate);
         etEndDate.setText(txtInitEndDate);
 
-        ProgressDialog dialog = new ProgressDialog(NewTournamentActivity.this);
-        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialog.setMessage("Connecting Server");
-
         volleyAPI.setReadAPIListener(new VolleyAPI.readAPIListener() {
             @Override
             public void readAPISucceed(String response) {
                 Gson gson = new Gson();
                 categories = gson.fromJson(response, Categories.class);
                 updateCategorySpin(categories);
-                dialog.dismiss();
+                if(!quizKey.equals("new")) {
+                    getQuizInfo();
+                } else {
+                    dialog.dismiss();
+                }
             }
 
             @Override
@@ -117,6 +123,30 @@ public class NewTournamentActivity extends AppCompatActivity {
         volleyAPI.getAPI();
         dialog.show();
 
+    }
+
+    private void getQuizInfo() {
+        db.collection("QuizList")
+                .document(quizKey)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        dialog.dismiss();
+                        if(task.isSuccessful()) {
+                            etName.setText(task.getResult().get("name").toString());
+                            etStartDate.setText(task.getResult().get("start_date").toString());
+                            etEndDate.setText(task.getResult().get("end_date").toString());
+                            spinCategory.setSelection(Integer.parseInt(task.getResult().get("category_id").toString()));
+                            spinCategory.setEnabled(false);
+                            spinDifficulty.setSelection(Integer.parseInt(task.getResult().get("difficulty_id").toString()));
+                            spinDifficulty.setEnabled(false);
+                        }
+                        else {
+                            finish();
+                        }
+                    }
+                });
     }
 
 
@@ -184,7 +214,7 @@ public class NewTournamentActivity extends AppCompatActivity {
             }
         });
 
-        btCreate.setOnClickListener(new View.OnClickListener() {
+        btSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Map<String, Object> quiz = new HashMap<>();
@@ -192,6 +222,8 @@ public class NewTournamentActivity extends AppCompatActivity {
                     String QuizName = etName.getText().toString();
                     String QuizDifficulty = spinDifficulty.getSelectedItem().toString();
                     quizDifficulty = QuizDifficulty;
+                    String QuizDifficultyId = String.valueOf(spinDifficulty.getSelectedItemPosition());
+//                    quizDifficultyId = QuizDifficultyId;
                     String QuizStartDate = etStartDate.getText().toString();
                     String QuizEndDate = etEndDate.getText().toString();
                     String QuizCategoryText = spinCategory.getSelectedItem().toString();
@@ -200,11 +232,18 @@ public class NewTournamentActivity extends AppCompatActivity {
 
                     quiz.put("name", QuizName);
                     quiz.put("category", QuizCategoryText);
+                    quiz.put("category_id", QuizCategoryId);
                     quiz.put("difficulty", quizDifficulty);
+                    quiz.put("difficulty_id", QuizDifficultyId);
                     quiz.put("start_date", QuizStartDate);
                     quiz.put("end_date", QuizEndDate);
-
-                    generateNewQuizzes(quiz);
+                    
+                    if(quizKey.equals("new")) {
+                        generateNewQuizzes(quiz);
+                    }
+                    else {
+                        updateQuizList(quiz);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -217,6 +256,30 @@ public class NewTournamentActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void updateQuizList(Map<String, Object> quiz) {
+        db.collection("QuizList")
+                .document(quizKey)
+                .update(
+                        "name", quiz.get("name"),
+                        "start_date", quiz.get("start_date"),
+                        "end_date", quiz.get("end_date")
+                )
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        dialog.dismiss();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        dialog.dismiss();
+                        Toast.makeText(NewTournamentActivity.this, "Update failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void generateNewQuizzes(Map<String, Object> quiz) {
@@ -239,7 +302,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 Quizzes quizzes = gson.fromJson(response, Quizzes.class);
                 if(quizzes.getResponseCode() == 0) {
-                    saveNewQuiz(response, quiz);
+                    addNewQuizDetail(response, quiz);
                 }
             }
 
@@ -253,7 +316,7 @@ public class NewTournamentActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void saveNewQuiz(String response, Map<String, Object> quiz) {
+    private void addNewQuizDetail(String response, Map<String, Object> quiz) {
         Map<String, Object> myQuiz = new HashMap<>();
         myQuiz.put("quiz", response);
         db.collection("QuizDetail")
@@ -263,7 +326,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                 public void onSuccess(DocumentReference documentReference) {
                     String key = documentReference.getId();
                     quiz.put("detail_key", key);
-                    updateQuizList(quiz);
+                    addNewQuizList(quiz);
                 }
             })
             .addOnFailureListener(new OnFailureListener() {
@@ -271,11 +334,13 @@ public class NewTournamentActivity extends AppCompatActivity {
                 public void onFailure(@NonNull Exception e) {
                     Toast.makeText(NewTournamentActivity.this, e.toString(),
                             Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 }
             });
+        dialog.show();
     }
 
-    private void updateQuizList(Map<String, Object> quiz) {
+    private void addNewQuizList(Map<String, Object> quiz) {
         db.collection("QuizList")
                 .add(quiz)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
@@ -289,6 +354,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(NewTournamentActivity.this, e.toString(),
                                 Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
                     }
                 });
     }

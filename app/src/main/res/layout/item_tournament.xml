@@ -37,6 +37,11 @@
             android:layout_height="wrap_content"
             android:text="title"
             android:textSize="16sp" />
+        <TextView
+            android:id="@+id/tv_rv_item_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"/>
     </LinearLayout>
 
     <LinearLayout

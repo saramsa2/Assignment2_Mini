@@ -47,23 +47,29 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
         Calendar calendarEnd = Calendar.getInstance();
         calendarEnd.set(Integer.parseInt(endDateDiv[2]) , Integer.parseInt(endDateDiv[1])-1 , Integer.parseInt(endDateDiv[0]));
 
-        holder.tvTerm.setText(startDate);
-        holder.tvProgress.setText(endDate);
-        holder.tvTitle.setText(quiz.get("name"));
-        holder.tvStatus.setText(quiz.get("name"));
-        if(today.after(calendarEnd)) {
-            holder.tvStatus.setText("Finished");
-            holder.tvStatus.setBackgroundResource(R.drawable.btn_finished);
-            holder.rvCardTournament.setBackgroundResource(R.drawable.border_round_disable);
-        } else if(today.before(calendarStart)) {
-            holder.tvStatus.setText("Up coming");
-            holder.tvStatus.setBackgroundResource(R.drawable.btn_up_coming);
-            holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
-        } else {
-            holder.tvStatus.setText("On going");
-            holder.tvStatus.setBackgroundResource(R.drawable.btn_on_going);
-            holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+        try {
+            holder.tvTerm.setText(startDate);
+            holder.tvProgress.setText(endDate);
+            holder.tvTitle.setText(quiz.get("name"));
+            holder.tvStatus.setText(quiz.get("name"));
+            holder.tvKey.setText(quiz.get("key"));
+            if(today.after(calendarEnd)) {
+                holder.tvStatus.setText("Finished");
+                holder.tvStatus.setBackgroundResource(R.drawable.btn_finished);
+                holder.rvCardTournament.setBackgroundResource(R.drawable.border_round_disable);
+            } else if(today.before(calendarStart)) {
+                holder.tvStatus.setText("Up coming");
+                holder.tvStatus.setBackgroundResource(R.drawable.btn_up_coming);
+                holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+            } else {
+                holder.tvStatus.setText("On going");
+                holder.tvStatus.setBackgroundResource(R.drawable.btn_on_going);
+                holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
 
     }
 
@@ -79,6 +85,7 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
         TextView tvTerm;
         TextView tvProgress;
         TextView tvStatus;
+        TextView tvKey;
 
         public RVQuizViewHoder(@NonNull View itemView) {
             super(itemView);
@@ -88,7 +95,27 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
             tvTerm = itemView.findViewById(R.id.tv_rv_item_term);
             tvProgress = itemView.findViewById(R.id.tv_rv_item_progress);
             tvStatus = itemView.findViewById(R.id.tv_rv_item_status);
+            tvKey = itemView.findViewById(R.id.tv_rv_item_key);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(myRVClickListener != null) {
+                        myRVClickListener.itemClickListener(tvKey.getText().toString());
+                    }
+                }
+            });
 
         }
+    }
+
+    public interface RVClickListener {
+        void itemClickListener(String quizListKey);
+    }
+
+    RVClickListener myRVClickListener;
+
+    public void setMyRVClickListener(RVClickListener myRVClickListener){
+        this.myRVClickListener = myRVClickListener;
     }
 }

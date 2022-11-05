@@ -1,11 +1,13 @@
 package nz.ac.unitec.cs.assignment2_mini;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -84,6 +86,14 @@ public class TournamentActivity extends AppCompatActivity {
 
     private void setScreen() {
         RVQuizAdapter adapter = new RVQuizAdapter(quizzes);
+        adapter.setMyRVClickListener(new RVQuizAdapter.RVClickListener() {
+            @Override
+            public void itemClickListener(String quizListKey) {
+                Intent intent = new Intent(TournamentActivity.this, NewTournamentActivity.class);
+                intent.putExtra("key", quizListKey);
+                startActivity(intent);
+            }
+        });
         recyclerView.setAdapter(adapter);
     }
 }
