@@ -61,8 +61,13 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
                 holder.tvStatus.setBackgroundResource(R.drawable.btn_up_coming);
                 holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
             } else {
-                holder.tvStatus.setText("On going");
-                holder.tvStatus.setBackgroundResource(R.drawable.btn_on_going);
+                if(quiz.get("progress").equals(null) || quiz.get("progress").equals("-")) {
+                    holder.tvStatus.setBackgroundResource(R.drawable.btn_on_going);
+                    holder.tvStatus.setText("On going");
+                } else {
+                    holder.tvStatus.setBackgroundResource(R.drawable.btn_participated);
+                    holder.tvStatus.setText("Participated");
+                }
                 holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
             }
         } catch (Exception e) {

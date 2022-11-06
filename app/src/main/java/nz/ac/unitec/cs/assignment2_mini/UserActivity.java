@@ -1,6 +1,7 @@
 package nz.ac.unitec.cs.assignment2_mini;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,6 +24,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,7 +149,7 @@ public class UserActivity extends AppCompatActivity {
             String key = document.getId();
 
             if(quizProgress.get(key) != null) {
-                quiz.put("progrees", quizProgress.get(key).toString());
+                quiz.put("progress",  quizProgress.get(key).toString());
             }
 
             quiz.put("key", key);
@@ -159,15 +164,21 @@ public class UserActivity extends AppCompatActivity {
             public void itemClickListener(String quizListKey) {
                 Intent intent = new Intent(UserActivity.this, QuizActivity.class);
                 intent.putExtra("key", quizListKey);
+                intent.putExtra("UID", getIntent().getExtras().get("UID").toString());
                 if(quizProgress.get(quizListKey) == null) {
                     intent.putExtra("progress", "-");
                 } else {
                     intent.putExtra("progress", quizProgress.get(quizListKey).toString());
                 }
-
-                startActivity(intent);
+                startActivityForResult(intent, 200);
             }
         });
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        loadQuizList();
     }
 }

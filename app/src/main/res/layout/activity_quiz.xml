@@ -1,9 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".QuizActivity">
+    tools:context=".QuizActivity"
+    android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/tv_quiz_question"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Question"
+        android:textSize="20sp"
+        android:layout_margin="10dp"
+        android:background="@drawable/border_round"
+        android:paddingVertical="5dp"
+        android:paddingHorizontal="20dp"/>
+
+
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="10dp">
+        <RadioButton
+            android:id="@+id/radio_btn_quiz_answer_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="answer 1"/>
+        <RadioButton
+            android:id="@+id/radio_btn_quiz_answer_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="answer 3"/>
+        <RadioButton
+            android:id="@+id/radio_btn_quiz_answer_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="answer 4"/>
+        <RadioButton
+            android:id="@+id/radio_btn_quiz_answer_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="answer 5"/>
+    </RadioGroup>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"/>
+        <Button
+            android:id="@+id/bt_quiz_submit"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="Submit"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"/>
+        <Button
+            android:id="@+id/bt_quiz_cancel"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="Cancel"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"/>
+    </LinearLayout>
+
+</LinearLayout>

@@ -47,34 +47,34 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-//                Intent intent = new Intent(MainActivity.this, UserActivity.class);
-//                intent.putExtra("UID", "NHG3LtDMbrcleijMxWDemHFWUyz1");
-//                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                intent.putExtra("UID", "NHG3LtDMbrcleijMxWDemHFWUyz1");
+                startActivity(intent);
 
-                String email = etEmail.getText().toString();
-                String password = etPassword.getText().toString();
-                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()){
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(MainActivity.this, "Authentication succeed.",
-                                    Toast.LENGTH_SHORT).show();
-                            if(user.getUid().equals("AsUJaklGqiR3lzIHcDpDLJCrYu22")){
-                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
-                                startActivity(intent);
-                            } else {
-                                Intent intent = new Intent(MainActivity.this, UserActivity.class);
-                                intent.putExtra("UID", user.getUid());
-                                startActivity(intent);
-                            }
-                        }
-                        else{
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+//                String email = etEmail.getText().toString();
+//                String password = etPassword.getText().toString();
+//                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<AuthResult> task) {
+//                        if (task.isSuccessful()){
+//                            FirebaseUser user = mAuth.getCurrentUser();
+//                            Toast.makeText(MainActivity.this, "Authentication succeed.",
+//                                    Toast.LENGTH_SHORT).show();
+//                            if(user.getUid().equals("AsUJaklGqiR3lzIHcDpDLJCrYu22")){
+//                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+//                                startActivity(intent);
+//                            } else {
+//                                Intent intent = new Intent(MainActivity.this, UserActivity.class);
+//                                intent.putExtra("UID", user.getUid());
+//                                startActivity(intent);
+//                            }
+//                        }
+//                        else{
+//                            Toast.makeText(MainActivity.this, "Authentication failed.",
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                });
             }
         });
 

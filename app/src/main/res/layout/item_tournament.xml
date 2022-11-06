@@ -53,12 +53,13 @@
         <TextView
             android:id="@+id/tv_rv_item_status"
             android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_height="35dp"
             android:layout_gravity="center"
             android:background="@drawable/btn_on_going"
             android:paddingHorizontal="10dp"
             android:paddingVertical="5dp"
             android:text="Test Text"
+            android:textColor="@color/white"
             android:textSize="18sp"
             android:gravity="center"/>
 
