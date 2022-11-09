@@ -130,13 +130,12 @@ public class QuizActivity extends AppCompatActivity {
             }
         }
         myProgress.setProgress(progressQuestion);
-//        showQuizObject();
     }
 
 
     private void addEventListeners() {
 
-        // summite button
+        // submit button
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -265,8 +264,6 @@ public class QuizActivity extends AppCompatActivity {
 
     // show current question
     private void showQuizObject() {
-
-
         int counter = 0;
 
         if(progressQuestion < myQuizzes.getResults().size()){

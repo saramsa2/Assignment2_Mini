@@ -165,8 +165,6 @@ public class NewTournamentActivity extends AppCompatActivity {
 
 
     private void updateCategorySpin(Categories categories) {
-//        this.categories = categories;
-
         if(categories != null) {
             List<String> categoryName = new ArrayList<>();
             List<Integer> categoryId = new ArrayList<>();
@@ -201,7 +199,6 @@ public class NewTournamentActivity extends AppCompatActivity {
                 DatePickerDialog dPDialog = new DatePickerDialog(NewTournamentActivity.this, startDate, calendar.get(Calendar.YEAR),
                         calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                 DatePicker dPicker = dPDialog.getDatePicker();
-//                dPicker.setMaxDate(Calendar.getInstance().getTimeInMillis());
                 dPDialog.show();
             }
         });
@@ -223,7 +220,6 @@ public class NewTournamentActivity extends AppCompatActivity {
                 DatePickerDialog dPDialog = new DatePickerDialog(NewTournamentActivity.this, endDate, calendar.get(Calendar.YEAR),
                         calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                 DatePicker dPicker = dPDialog.getDatePicker();
-//                dPicker.setMaxDate(Calendar.getInstance().getTimeInMillis());
                 dPDialog.show();
             }
         });
@@ -237,7 +233,6 @@ public class NewTournamentActivity extends AppCompatActivity {
                     String QuizDifficulty = spinDifficulty.getSelectedItem().toString();
                     quizDifficulty = QuizDifficulty;
                     String QuizDifficultyId = String.valueOf(spinDifficulty.getSelectedItemPosition());
-//                    quizDifficultyId = QuizDifficultyId;
                     String QuizStartDate = etStartDate.getText().toString();
                     String QuizEndDate = etEndDate.getText().toString();
                     String QuizCategoryText = spinCategory.getSelectedItem().toString();

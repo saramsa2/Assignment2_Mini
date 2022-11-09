@@ -25,7 +25,6 @@ public class VolleyAPI {
     public VolleyAPI(Context context, String url) {
         this.url = url;
         queue = Volley.newRequestQueue(context);
-//        getAPI();
     }
 
     public void getAPI() {
@@ -34,13 +33,11 @@ public class VolleyAPI {
             public void onResponse(String response) {
                 setResponse(response);
                 apiListener.readAPISucceed(response);
-//                Toast.makeText(context,"Succeed",Toast.LENGTH_SHORT).show();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 apiListener.readAPIFailed();
-//                Toast.makeText(context,"Fail",Toast.LENGTH_SHORT).show();
             }
         });
         queue.add(stringRequest);
