@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -42,9 +44,12 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
         String endDate = quiz.get("end_date");
         String[] endDateDiv = endDate.split("-");
         Calendar today = Calendar.getInstance();
+
         Calendar calendarStart = Calendar.getInstance();
+        calendarStart.setTime(today.getTime());
         calendarStart.set(Integer.parseInt(startDateDiv[2]) , Integer.parseInt(startDateDiv[1])-1 , Integer.parseInt(startDateDiv[0]));
         Calendar calendarEnd = Calendar.getInstance();
+        calendarEnd.setTime(today.getTime());
         calendarEnd.set(Integer.parseInt(endDateDiv[2]) , Integer.parseInt(endDateDiv[1])-1 , Integer.parseInt(endDateDiv[0]));
 
         try {
@@ -59,16 +64,31 @@ public class RVQuizAdapter extends RecyclerView.Adapter<RVQuizAdapter.RVQuizView
             } else if(today.before(calendarStart)) {
                 holder.tvStatus.setText("Up coming");
                 holder.tvStatus.setBackgroundResource(R.drawable.btn_up_coming);
-                holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+                holder.rvCardTournament.setBackgroundResource(R.drawable.border_round_disable);
             } else {
-                if(quiz.get("progress").equals(null) || quiz.get("progress").equals("-")) {
+                if(quiz.containsKey("progress")){
+                    if(quiz.get("progress").equals("-")) {
+                        holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+                        holder.tvStatus.setBackgroundResource(R.drawable.btn_on_going);
+                        holder.tvStatus.setText("On going");
+                    } else {
+                        JSONObject myProgress = new JSONObject(quiz.get("progress"));
+                        if(Integer.parseInt(myProgress.get("progress").toString()) < 10) {
+                            holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+                            holder.tvStatus.setBackgroundResource(R.drawable.btn_on_playing);
+                            holder.tvStatus.setText("On playing");
+                        } else {
+                            holder.rvCardTournament.setBackgroundResource(R.drawable.border_round_disable);
+                            holder.tvStatus.setBackgroundResource(R.drawable.btn_participated);
+                            holder.tvStatus.setText("Participated");
+                        }
+                    }
+                } else {
+                    holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
                     holder.tvStatus.setBackgroundResource(R.drawable.btn_on_going);
                     holder.tvStatus.setText("On going");
-                } else {
-                    holder.tvStatus.setBackgroundResource(R.drawable.btn_participated);
-                    holder.tvStatus.setText("Participated");
                 }
-                holder.rvCardTournament.setBackgroundResource(R.drawable.border_round);
+
             }
         } catch (Exception e) {
             e.printStackTrace();

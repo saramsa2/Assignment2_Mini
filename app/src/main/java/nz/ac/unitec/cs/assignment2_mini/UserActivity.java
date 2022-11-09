@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,12 +23,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.gson.Gson;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import nz.ac.unitec.cs.assignment2_mini.RecyclerView.RVQuizAdapter;
@@ -162,15 +158,44 @@ public class UserActivity extends AppCompatActivity {
         adapter.setMyRVClickListener(new RVQuizAdapter.RVClickListener() {
             @Override
             public void itemClickListener(String quizListKey) {
-                Intent intent = new Intent(UserActivity.this, QuizActivity.class);
-                intent.putExtra("key", quizListKey);
-                intent.putExtra("UID", getIntent().getExtras().get("UID").toString());
-                if(quizProgress.get(quizListKey) == null) {
-                    intent.putExtra("progress", "-");
-                } else {
-                    intent.putExtra("progress", quizProgress.get(quizListKey).toString());
+
+                DocumentSnapshot myDocument = null;
+                for(DocumentSnapshot document: myTask.getResult().getDocuments()) {
+                    if(document.getId().equals(quizListKey)) {
+                        myDocument = document;
+                    }
                 }
-                startActivityForResult(intent, 200);
+                if(myDocument != null) {
+                    String endDate = myDocument.getString("end_date");
+                    String[] endDateDiv = endDate.split("-");
+                    Calendar today = Calendar.getInstance();
+                    today.set(Calendar.HOUR_OF_DAY, 0);
+                    today.set(Calendar.MINUTE, 0);
+                    today.set(Calendar.SECOND, 0);
+                    Calendar calendarEnd = Calendar.getInstance();
+                    calendarEnd.set(Calendar.HOUR_OF_DAY, 0);
+                    calendarEnd.set(Calendar.MINUTE, 0);
+                    calendarEnd.set(Calendar.SECOND, 0);
+                    calendarEnd.set(Integer.parseInt(endDateDiv[2]), Integer.parseInt(endDateDiv[1]) - 1, Integer.parseInt(endDateDiv[0]));
+                    String startDate = myDocument.getString("start_date");
+                    String[] startDateDiv = startDate.split("-");
+                    Calendar calendarStart = Calendar.getInstance();
+                    calendarStart.set(Calendar.HOUR_OF_DAY, 0);
+                    calendarStart.set(Calendar.MINUTE, 0);
+                    calendarStart.set(Calendar.SECOND, 0);
+                    calendarStart.set(Integer.parseInt(startDateDiv[2]), Integer.parseInt(startDateDiv[1]) - 1, Integer.parseInt(startDateDiv[0]));
+                    if (!today.after(calendarEnd) && !today.before(calendarStart)) {
+                        Intent intent = new Intent(UserActivity.this, QuizActivity.class);
+                        intent.putExtra("key", quizListKey);
+                        intent.putExtra("UID", getIntent().getExtras().get("UID").toString());
+                        if (quizProgress.get(quizListKey) == null) {
+                            intent.putExtra("progress", "-");
+                        } else {
+                            intent.putExtra("progress", quizProgress.get(quizListKey).toString());
+                        }
+                        startActivityForResult(intent, 200);
+                    }
+                }
             }
         });
         recyclerView.setAdapter(adapter);

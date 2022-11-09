@@ -15,10 +15,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 
+import org.checkerframework.checker.units.qual.A;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,7 +66,6 @@ public class QuizActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         setLoadingDialog();
-        findFirstQuestion();
         loadDataBase();
         addEventListeners();
     }
@@ -73,19 +75,62 @@ public class QuizActivity extends AppCompatActivity {
         Object currentProgress =  getIntent().getExtras().get("progress");
         if(currentProgress.equals("-")){
             progressQuestion = 0;
+            myProgress.setProgress(progressQuestion);
+            showQuizObject();
         } else {
             JSONObject objectProgress = new JSONObject();
             try {
                 objectProgress = new JSONObject(currentProgress.toString());
                 progressQuestion = objectProgress.getInt("progress");
-                for(int i = 0; i < progressQuestion; i++) {
-                    myProgress.addResult(i, (Boolean) objectProgress.getJSONObject("results").get(String.valueOf(i)));
+                if(progressQuestion >= myQuizzes.getResults().size()){
+                    AlertDialog.Builder alertDBuilder = new AlertDialog.Builder(QuizActivity.this);
+                    alertDBuilder.setTitle("Do you want to restart?")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                    String temp = FirebaseAuth.getInstance().getUid();
+                                    db.collection("UserProgress")
+                                            .document(FirebaseAuth.getInstance().getUid())
+                                            .update(getIntent().getExtras().get("key").toString(), FieldValue.delete())
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Toast.makeText(QuizActivity.this, "Failed to update. Try again", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+                                                    progressQuestion = 0;
+                                                    myProgress.setProgress(progressQuestion);
+                                                    showQuizObject();
+                                                }
+                                            });
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                    finish();
+                                }
+                            });
+                    AlertDialog alertDialog = alertDBuilder.create();
+                    alertDialog.show();
+                } else {
+                    for(int i = 0; i < progressQuestion; i++) {
+                        myProgress.addResult(i, (Boolean) objectProgress.getJSONObject("results").get(String.valueOf(i)));
+                    }
+                    myProgress.setProgress(progressQuestion);
+                    showQuizObject();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         myProgress.setProgress(progressQuestion);
+//        showQuizObject();
     }
 
 
@@ -105,14 +150,15 @@ public class QuizActivity extends AppCompatActivity {
                     title = "Incorrect";
                     contents = "Correct answer is " + radioAnswer[correctAnswer].getText() + ".";
                 }
+                for(int i = 0; i < radioAnswer.length; i++) {
+                    radioAnswer[i].setChecked(false);
+                }
                 progressQuestion++;
                 myProgress.setProgress(progressQuestion);
 
-                Map<String, Object> data = new HashMap<>();
-                data.put(getIntent().getExtras().get("key").toString(), new Gson().toJson(myProgress));
                 db.collection("UserProgress")
                         .document(getIntent().getExtras().get("UID").toString())
-                        .set(data)
+                        .update(getIntent().getExtras().get("key").toString(), new Gson().toJson(myProgress))
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
@@ -145,23 +191,38 @@ public class QuizActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myProgress.setProgress(progressQuestion);
-                Map<String, Object> data = new HashMap<>();
-                data.put(getIntent().getExtras().get("key").toString(), new Gson().toJson(myProgress));
-                db.collection("UserProgress")
-                        .document(getIntent().getExtras().get("UID").toString())
-                        .set(data)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                AlertDialog.Builder alertDBuilder = new AlertDialog.Builder(QuizActivity.this);
+                alertDBuilder.setTitle("Do you want to stop this quiz?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onSuccess(Void unused) {
-                                finish();
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                myProgress.setProgress(progressQuestion);
+                                db.collection("UserProgress")
+                                        .document(getIntent().getExtras().get("UID").toString())
+                                        .update(getIntent().getExtras().get("key").toString(), new Gson().toJson(myProgress))
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                finish();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(QuizActivity.this, "Failed to update. Try again", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                             }
-                        }).addOnFailureListener(new OnFailureListener() {
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(QuizActivity.this, "Failed to update. Try again", Toast.LENGTH_SHORT).show();
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
                             }
                         });
+                AlertDialog alertDialog = alertDBuilder.create();
+                alertDialog.show();
+
             }
         });
     }
@@ -181,7 +242,8 @@ public class QuizActivity extends AppCompatActivity {
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                                         dialog.dismiss();
                                         quizJsonString = documentSnapshot.getString("quiz");
-                                        showQuizObject();
+                                        myQuizzes = new Gson().fromJson(quizJsonString, Quizzes.class);
+                                        findFirstQuestion();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -203,14 +265,14 @@ public class QuizActivity extends AppCompatActivity {
 
     // show current question
     private void showQuizObject() {
-        Gson gson = new Gson();
-        myQuizzes = gson.fromJson(quizJsonString, Quizzes.class);
+
+
         int counter = 0;
 
         if(progressQuestion < myQuizzes.getResults().size()){
             for(Quiz myQuiz : myQuizzes.getResults()) {
                 if(counter == progressQuestion) {
-                    tvQuestion.setText( "Q" + progressQuestion + ". " + myQuiz.getQuestion());
+                    tvQuestion.setText( "Q" + (progressQuestion + 1) + ". " + myQuiz.getQuestion());
                     int quizSize = myQuiz.getIncorrectAnswers().size() + 1;
                     correctAnswer = (int)(Math.ceil(Math.random() * quizSize));
                     if(correctAnswer >= quizSize) {
@@ -223,7 +285,6 @@ public class QuizActivity extends AppCompatActivity {
                         myIncorrectAnswer[inCorrectAnswerCounter] = wrongAnswer;
                         inCorrectAnswerCounter++;
                     }
-                    ;
 
                     inCorrectAnswerCounter = 0;
                     for(int i = 0; i < quizSize; i++) {

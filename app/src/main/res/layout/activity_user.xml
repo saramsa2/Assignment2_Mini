@@ -12,21 +12,23 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingVertical="10dp">
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/bt_user_logout"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:text="Logout"
-            android:background="@drawable/ic_sign_out"/>
+            android:background="@drawable/ic_sign_out"
+            android:text="Logout" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.05"/>
+            android:layout_weight="0.05" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -1,10 +1,12 @@
 package nz.ac.unitec.cs.assignment2_mini;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,6 +14,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -38,27 +41,26 @@ import nz.ac.unitec.cs.assignment2_mini.Volley.VolleyAPI;
 
 public class NewTournamentActivity extends AppCompatActivity {
 
-    Button btNewTournament, btTournamentList;
     EditText etName, etStartDate, etEndDate;
     Spinner spinCategory, spinDifficulty;
-
-    Button btSubmit, btCancel;
+    TextView tvDelete;
+    Button btSubmit, btCancel, btDelete;
 
     Categories categories;
-    String quizCategory;
     String quizCategoryId;
     String quizDifficulty;
-    String quizDifficultyId;
 
     Calendar calendar = Calendar.getInstance();
 
     private final String CATEGORY_URL = "https://opentdb.com/api_category.php";
-    private final String QUIZ_URL = "https://opentdb.com/api.php?amount=10&type=multiple";
+    private final String QUIZ_URL_BASE = "https://opentdb.com/api.php?amount=";
+    private String QUIZ_URL;
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     ProgressDialog dialog;
     VolleyAPI volleyAPI;
-    String quizKey;
+    String quizListKey, quizDetailKey;
+    int loadCounter;
 
 
     @Override
@@ -76,28 +78,36 @@ public class NewTournamentActivity extends AppCompatActivity {
         btSubmit = findViewById(R.id.bt_admin_create);
         btCancel = findViewById(R.id.bt_admin_cancel);
 
+        tvDelete = findViewById(R.id.tv_admin_delete);
+        btDelete = findViewById(R.id.bt_admin_delete);
+
         volleyAPI = new VolleyAPI(NewTournamentActivity.this, CATEGORY_URL);
+        quizListKey = getIntent().getExtras().get("key").toString();
 
-        dialog = new ProgressDialog(NewTournamentActivity.this);
-        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialog.setMessage("Connecting Server");
 
-        quizKey = getIntent().getExtras().get("key").toString();
+        QUIZ_URL = QUIZ_URL_BASE + getResources().getInteger(R.integer.quiz_size) + getResources().getString(R.string.quiz_type);
 
+        setLoadingDialog();
         addEventListeners();
         setInit();
 
     }
 
+    private void setLoadingDialog() {
+        dialog = new ProgressDialog(NewTournamentActivity.this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage("Connecting Server");
+    }
+
     private void setInit() {
         Calendar initDate = Calendar.getInstance();
         String txtInitStartDate = String.valueOf(initDate.get(Calendar.DAY_OF_MONTH));
-        txtInitStartDate += "-" + String.valueOf(initDate.get(Calendar.MONTH)+1);
-        txtInitStartDate += "-" + String.valueOf(initDate.get(Calendar.YEAR));
+        txtInitStartDate += "-" + (initDate.get(Calendar.MONTH) + 1);
+        txtInitStartDate += "-" + initDate.get(Calendar.YEAR);
         initDate.add(Calendar.MONTH, 1);
         String txtInitEndDate = String.valueOf(initDate.get(Calendar.DAY_OF_MONTH));
-        txtInitEndDate += "-" + String.valueOf(initDate.get(Calendar.MONTH)+1);
-        txtInitEndDate += "-" + String.valueOf(initDate.get(Calendar.YEAR));
+        txtInitEndDate += "-" + (initDate.get(Calendar.MONTH) + 1);
+        txtInitEndDate += "-" + initDate.get(Calendar.YEAR);
 
         etStartDate.setText(txtInitStartDate);
         etEndDate.setText(txtInitEndDate);
@@ -108,7 +118,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 categories = gson.fromJson(response, Categories.class);
                 updateCategorySpin(categories);
-                if(!quizKey.equals("new")) {
+                if(!quizListKey.equals("new")) {
                     getQuizInfo();
                 } else {
                     dialog.dismiss();
@@ -125,9 +135,10 @@ public class NewTournamentActivity extends AppCompatActivity {
 
     }
 
+    // load selected quiz detail and enable delete button
     private void getQuizInfo() {
         db.collection("QuizList")
-                .document(quizKey)
+                .document(quizListKey)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
@@ -141,12 +152,15 @@ public class NewTournamentActivity extends AppCompatActivity {
                             spinCategory.setEnabled(false);
                             spinDifficulty.setSelection(Integer.parseInt(task.getResult().get("difficulty_id").toString()));
                             spinDifficulty.setEnabled(false);
+                            quizDetailKey = task.getResult().get("detail_key").toString();
                         }
                         else {
                             finish();
                         }
                     }
                 });
+        btDelete.setVisibility(View.VISIBLE);
+        tvDelete.setVisibility(View.VISIBLE);
     }
 
 
@@ -238,7 +252,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                     quiz.put("start_date", QuizStartDate);
                     quiz.put("end_date", QuizEndDate);
                     
-                    if(quizKey.equals("new")) {
+                    if(quizListKey.equals("new")) {
                         generateNewQuizzes(quiz);
                     }
                     else {
@@ -256,11 +270,71 @@ public class NewTournamentActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        btDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                AlertDialog.Builder alertDBuilder = new AlertDialog.Builder(NewTournamentActivity.this);
+                alertDBuilder.setTitle("Do you want to delete?")
+                        .setCancelable(false)
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        })
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                loadCounter = 0;
+                                db.collection("QuizList").document(quizListKey)
+                                        .delete()
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                loadCounter++;
+                                                if(loadCounter == 2) {
+                                                    finish();
+                                                }
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(NewTournamentActivity.this,
+                                                        "Error. Retry later.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                db.collection("QuizDetail").document(quizDetailKey)
+                                        .delete()
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                loadCounter++;
+                                                if(loadCounter == 2) {
+                                                    finish();
+                                                }
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(NewTournamentActivity.this,
+                                                        "Error. Retry later.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        });
+                AlertDialog alertDialog = alertDBuilder.create();
+                alertDialog.show();
+            }
+        });
     }
 
     private void updateQuizList(Map<String, Object> quiz) {
         db.collection("QuizList")
-                .document(quizKey)
+                .document(quizListKey)
                 .update(
                         "name", quiz.get("name"),
                         "start_date", quiz.get("start_date"),
@@ -293,8 +367,6 @@ public class NewTournamentActivity extends AppCompatActivity {
             myQuizUrl += "&difficulty=" + quizDifficulty;
         }
 
-
-
         VolleyAPI quizVolleyAPI = new VolleyAPI(NewTournamentActivity.this, myQuizUrl);
         quizVolleyAPI.setReadAPIListener(new VolleyAPI.readAPIListener() {
             @Override
@@ -305,7 +377,6 @@ public class NewTournamentActivity extends AppCompatActivity {
                     addNewQuizDetail(response, quiz);
                 }
             }
-
             @Override
             public void readAPIFailed() {
                 dialog.dismiss();
@@ -347,6 +418,7 @@ public class NewTournamentActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         dialog.dismiss();
+                        finish();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

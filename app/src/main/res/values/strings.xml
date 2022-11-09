@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Quiz Tournament</string>
+    <string name="quiz_type">&amp;type=multiple</string>
 </resources>
